@@ -1,5 +1,5 @@
-# Topicos 2015 - 2º Semestre
+# Tópicos 2015 - 2º Semestre
 
-Faculdade Integrado de Campo Mourão 
-Academico: Misael Rodrigo 
+Faculdade Integrado de Campo Mourão <br />
+Acadêmico: Misael Rodrigo 
 
