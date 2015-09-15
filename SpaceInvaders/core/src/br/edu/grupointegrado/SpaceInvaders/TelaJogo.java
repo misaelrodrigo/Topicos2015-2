@@ -2,6 +2,8 @@ package br.edu.grupointegrado.SpaceInvaders;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -54,6 +56,10 @@ public class TelaJogo extends TelaBase {
     private static float VELOCIDADEMETEORO1 = 100;
     private static float VELOCIDADEMETEORO2 = 150;
 
+    private Sound somTiro;
+    private Sound somExploracao;
+    private Sound somGameOver;
+    private Music musicaFundo;
 
     /**
      * Construtor padrão de tela de Jogo
@@ -71,6 +77,7 @@ public class TelaJogo extends TelaBase {
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         batch = new SpriteBatch();
 
+
         //cria o balco no tamanho da camera e referencia a nosso camera ao balco.
         palco = new Stage(new FillViewport(camera.viewportWidth, camera.viewportHeight, camera));
         palcoInformacoes = new Stage(new FillViewport(camera.viewportWidth, camera.viewportHeight, camera));
@@ -79,7 +86,17 @@ public class TelaJogo extends TelaBase {
         initInformacoes();
         initJogador();
         initTextura();
+        initSons();
 
+
+    }
+
+    private void initSons() {
+        somTiro = Gdx.audio.newSound(Gdx.files.internal("sounds/shoot.mp3"));
+        somGameOver = Gdx.audio.newSound(Gdx.files.internal("sounds/gameover.mp3"));
+        somExploracao = Gdx.audio.newSound(Gdx.files.internal("sounds/explosion.mp3"));
+        musicaFundo= Gdx.audio.newMusic(Gdx.files.internal("sounds/background.mp3"));
+        musicaFundo.setLooping(true);
     }
 
     private void initTextura() {
@@ -102,7 +119,7 @@ public class TelaJogo extends TelaBase {
         jogador = new Image(texturaJogador);
         float x = camera.viewportWidth / 2 - jogador.getWidth() / 2;
         float y = 0;
-        jogador.setPosition(x,y);
+        jogador.setPosition(x, y);
         palco.addActor(jogador);
     }
 
@@ -162,6 +179,8 @@ public class TelaJogo extends TelaBase {
         atualizarExplosoes(delta);
 
         if(!gameOver) {
+            if(!musicaFundo.isPlaying())musicaFundo.play();
+
             capturaTeclas();
             atualizarJogador(delta);
 
@@ -171,6 +190,8 @@ public class TelaJogo extends TelaBase {
 
             detectarColisoes(meteoros1, PONTUACAOMETEORO1);
             detectarColisoes(meteoros2, PONTUACAOMETEORO2);
+        }else{
+            if(musicaFundo.isPlaying())musicaFundo.stop();
         }
         palco.act(delta);
         palcoInformacoes.act(delta);
@@ -213,13 +234,15 @@ public class TelaJogo extends TelaBase {
                     pontuacao += valorPonto; // incrementa a pontuacao
                     meteoro.remove(); // remove do palco
                     meteoros.removeValue(meteoro, true); //remove da lista
-                    criarExplosao(meteoro.getX(), meteoro.getY());
+                    criarExplosao(meteoro.getX() +( meteoro.getWidth()/2), meteoro.getY()+(meteoro.getHeight()/2));
                 }
 
             }
             //detecta colissao com o player.
             if(recJogador.overlaps(recMeteoro)){
                 gameOver = true;
+                somGameOver.play();
+
                 //jogador.setVisible(false);
             }
         }
@@ -233,9 +256,9 @@ public class TelaJogo extends TelaBase {
      */
     private void criarExplosao(float x, float y) {
         Image ator = new Image(texturasExplosao.get(0));
-        ator.setPosition(x, y);
+        ator.setPosition(x - (ator.getWidth()/2), y-(ator.getHeight()/2));
         palco.addActor(ator);
-
+        somExploracao.play();
         Explosao explosao = new Explosao(ator, texturasExplosao);
         explosoes.add(explosao);
 
@@ -310,6 +333,8 @@ public class TelaJogo extends TelaBase {
                 Image tiro = new Image(texturaTiro);
                 float x = jogador.getX() + jogador.getWidth() / 2 -tiro.getWidth() / 2;
                 float y = jogador.getY() + jogador.getHeight();
+
+                somTiro.play();
 
                 tiro.setPosition(x, y);
                 tiros.add(tiro);
@@ -420,6 +445,11 @@ public class TelaJogo extends TelaBase {
         for (Texture text : texturasExplosao){
             text.dispose();
         }
+
+        somExploracao.dispose();
+        somGameOver.dispose();
+        somTiro.dispose();
+        musicaFundo.dispose();
 
     }
 }
